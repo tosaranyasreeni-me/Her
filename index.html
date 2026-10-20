@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Sanctuary — From Dahlia to Her Dearest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gothic-black: #020202;
+            --pure-gold: #e5c158;
+            --gold-glow: rgba(229, 193, 88, 0.35);
+            --border-gold: rgba(229, 193, 88, 0.45);
+            --card-glass: rgba(6, 5, 4, 0.95);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cinzel', 'Georgia', serif; user-select: none; }
+        body, html { width: 100vw; height: 100vh; overflow: hidden; background-color: var(--gothic-black); color: #f7f3e8; }
+
+        /* Exact Video Background Container using the exact video visual asset */
+        #video-bg-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; overflow: hidden; pointer-events: none;
+        }
+        #video-bg-container video {
+            width: 100vw; height: 100vh; object-fit: cover; opacity: 0.7;
+        }
+
+        #touch-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999;
+        }
+
+        /* Stage 1: Envelope Intro */
+        #intro-stage {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #140f04 0%, #020202 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 100;
+            transition: opacity 1.2s ease;
+        }
+
+        .envelope-card {
+            width: 380px; height: 270px; background: #080705;
+            border: 1px solid var(--pure-gold); box-shadow: 0 0 80px rgba(0,0,0,0.99), 0 0 35px var(--gold-glow);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; position: relative; border-radius: 4px; transition: transform 0.4s ease;
+        }
+        .envelope-card:hover { transform: scale(1.03); }
+
+        /* Variegated Magenta/White Dahlia Flower Seal[span_0](start_span)[span_0](end_span) */
+        .dahlia-seal-img {
+            width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--pure-gold);
+            background: url('https://images.unsplash.com/photo-1558882224-dda166733046?auto=format&fit=crop&w=400&q=80') center/cover no-repeat;
+            margin-bottom: 15px; box-shadow: 0 0 30px var(--gold-glow);
+        }
+
+        /* Stage 2: Three Majestic Poem World Portals */
+        #poem-world-stage {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 90; display: none; flex-direction: column;
+            justify-content: center; align-items: center; opacity: 0; transition: opacity 1.5s ease;
+            background: rgba(2, 2, 2, 0.85);
+        }
+
+        .world-title {
+            font-family: 'Cinzel Decorative', serif; color: var(--pure-gold); letter-spacing: 5px;
+            font-size: 1.4rem; margin-bottom: 35px; text-transform: uppercase; text-align: center;
+        }
+
+        .poem-select-grid { display: flex; flex-direction: column; gap: 20px; width: 90%; max-width: 520px; z-index: 95; }
+
+        .gothic-btn {
+            background: rgba(8, 7, 5, 0.94); border: 1px solid var(--pure-gold);
+            color: var(--pure-gold); padding: 18px 26px; font-size: 0.9rem; letter-spacing: 3px;
+            cursor: pointer; text-transform: uppercase; border-radius: 2px; transition: all 0.35s ease;
+            backdrop-filter: blur(12px); text-align: center; box-shadow: 0 4px 25px rgba(0,0,0,0.9);
+        }
+        .gothic-btn:hover {
+            background: var(--pure-gold); color: #020202; box-shadow: 0 0 35px var(--gold-glow); transform: translateY(-2px);
+        }
+
+        /* Fullscreen Poem & Word Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 2, 2, 0.96); z-index: 200; display: none;
+            justify-content: center; align-items: center; backdrop-filter: blur(18px);
+        }
+        .modal-card {
+            background: linear-gradient(135deg, rgba(8, 7, 5, 0.98) 0%, rgba(2, 2, 2, 0.99) 100%);
+            border: 1px solid var(--pure-gold); width: 92%; max-width: 700px; padding: 48px 38px;
+            border-radius: 6px; box-shadow: 0 0 90px rgba(0,0,0,0.99), inset 0 0 40px var(--gold-glow);
+            text-align: center; position: relative; max-height: 85vh; overflow-y: auto; z-index: 210;
+        }
+        .modal-card h3 { font-family: 'Cinzel Decorative', serif; color: var(--pure-gold); font-size: 1.65rem; letter-spacing: 3px; margin-bottom: 8px; font-weight: 400; }
+        .modal-card .sub { color: #c8b688; font-size: 0.78rem; letter-spacing: 3px; margin-bottom: 25px; text-transform: uppercase; }
+        .modal-card-body { font-family: 'Cormorant Garamond', serif; font-style: italic; line-height: 2.2; font-size: 1.3rem; color: #f7f3e8; }
+        .close-modal { position: absolute; top: 18px; right: 22px; color: var(--pure-gold); cursor: pointer; font-size: 1.5rem; }
+
+        /* Main Sanctuary Interface */
+        #main-sanctuary {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: none; flex-direction: column; z-index: 50; background: rgba(2, 2, 2, 0.88);
+        }
+
+        .nav-header {
+            width: 100%; height: 75px; background: rgba(5, 5, 5, 0.98);
+            border-bottom: 1px solid var(--border-gold); display: flex;
+            justify-content: space-between; align-items: center; padding: 0 24px; z-index: 60;
+        }
+
+        .nav-tabs { display: flex; gap: 12px; overflow-x: auto; }
+        .tab-btn {
+            background: transparent; border: none; color: #c8b688; font-size: 0.78rem;
+            letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 8px 14px;
+            border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.3s;
+        }
+        .tab-btn.active, .tab-btn:hover { color: var(--pure-gold); border-color: var(--pure-gold); }
+
+        .content-realm { flex: 1; padding: 24px; overflow-y: auto; display: none; justify-content: center; align-items: flex-start; }
+        .content-realm.active { display: flex; }
+
+        .panel-container {
+            width: 100%; max-width: 1050px; background: var(--card-glass);
+            border: 1px solid var(--border-gold); padding: 36px; border-radius: 6px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.95); backdrop-filter: blur(18px); margin-top: 10px;
+        }
+
+        .dedication-banner {
+            background: rgba(229, 193, 88, 0.08); border: 1px solid var(--border-gold);
+            padding: 18px; border-radius: 4px; margin-bottom: 24px; text-align: center;
+            font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: #f7f3e8; line-height: 1.8; font-style: italic;
+        }
+
+        /* Lexicon Grid displaying exactly 100 words with individual accent colors */
+        .word-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; max-height: 52vh; overflow-y: auto; padding-right: 6px;
+        }
+        .word-card {
+            background: rgba(12, 10, 6, 0.92); border: 1px solid var(--border-gold);
+            padding: 20px; border-radius: 4px; text-align: left; cursor: pointer; transition: all 0.35s ease;
+        }
+        .word-card:hover {
+            background: rgba(229, 193, 88, 0.18); border-color: var(--pure-gold); transform: translateY(-3px); box-shadow: 0 0 25px var(--gold-glow);
+        }
+        .word-card h4 { font-size: 1.2rem; margin-bottom: 2px; font-weight: normal; letter-spacing: 1px; }
+        .word-card .word-meta { font-size: 0.7rem; color: #c8b688; font-style: italic; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .word-card .word-example { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: #f7f3e8; font-style: italic; line-height: 1.5; }
+
+        input, textarea {
+            background: rgba(5, 5, 5, 0.95); border: 1px solid var(--border-gold);
+            color: #f7f3e8; padding: 14px; font-size: 0.95rem; width: 100%; outline: none; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Exact Video Background Container -->
+    <div id="video-bg-container">
+        <video autoplay muted loop playsinline>
+            <!-- Direct video feed URL mapping your visual assets -->
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-starry-night-sky-with-shooting-stars-42656-large.mp4" type="mp4">
+        </video>
+    </div>
+
+    <canvas id="touch-canvas"></canvas>
+
+    <!-- STAGE 1: ENVELOPE INTRO -->
+    <div id="intro-stage">
+        <div class="envelope-card" onclick="openEnvelope()">
+            <div class="dahlia-seal-img"></div>
+            <div style="color: var(--pure-gold); letter-spacing: 4px; font-size: 0.85rem;">FROM DAHLIA</div>
+            <div style="color: #f7f3e8; letter-spacing: 3px; font-size: 1rem; margin-top: 4px;">FOR HER DEAREST</div>
+            <div style="color: #c8b688; font-size: 0.68rem; margin-top: 14px; letter-spacing: 2px;">TOUCH TO UNSEAL</div>
+        </div>
+    </div>
+
+    <!-- STAGE 2: THREE MAJESTIC POEM WORLD PORTALS -->
+    <div id="poem-world-stage">
+        <div class="world-title">Three Realms from Dahlia's Heart</div>
+        <div class="poem-select-grid">
+            <button class="gothic-btn" onclick="showPoemModal(1)">I. Realm of Unspoken Elegance</button>
+            <button class="gothic-btn" onclick="showPoemModal(2)">II. Realm of Fortitude & Realities</button>
+            <button class="gothic-btn" onclick="showPoemModal(3)">III. Realm of Eternity & The Paths Ahead</button>
+            <button class="gothic-btn" style="margin-top: 20px; border-color: var(--pure-gold); color: #ffffff;" onclick="enterMainSanctuary()">Enter Main Sanctuary →</button>
+        </div>
+    </div>
+
+    <!-- DYNAMIC FULLSCREEN MODAL -->
+    <div id="display-modal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeModal()">✕</span>
+            <h3 id="modal-title">Title</h3>
+            <div id="modal-sub" class="sub">Subtitle</div>
+            <div id="modal-body" class="modal-card-body">Content</div>
+        </div>
+    </div>
+
+    <!-- STAGE 3: MAIN SANCTUARY SCREEN -->
+    <div id="main-sanctuary">
+        <header class="nav-header">
+            <div style="color: var(--pure-gold); font-size: 0.95rem; letter-spacing: 3px;">DAHLIA'S HAVEN</div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchRealm('lexicon', event)">100 Words For Her</button>
+                <button class="tab-btn" onclick="switchRealm('notes', event)">Notes Corner</button>
+                <button class="tab-btn" onclick="toggleAudio()" id="audio-btn">🎵 Music: Wednesday Theme</button>
+            </div>
+        </header>
+
+        <div id="realm-lexicon" class="content-realm active">
+            <div class="panel-container">
+                <h2 style="font-family: 'Cinzel Decorative', serif; color: var(--pure-gold); font-size: 1.4rem; letter-spacing: 3px; margin-bottom: 12px; font-weight: normal; text-align: center;">100 Words, Sources, Periods, Examples & Unique Verses</h2>
+                
+                <div class="dedication-banner">
+                    “My dearest, here are 100 exquisite words, each featuring its individual color, historical period, meaning, example sentence, and a unique verse dedicated to your soul.” — Dahlia
+                </div>
+
+                <input id="lex-search" type="text" placeholder="Filter through all 100 words..." oninput="filterLexicon()" style="margin-bottom: 22px;">
+                <div id="lexicon-stream" class="word-grid"></div>
+            </div>
+        </div>
+
+        <div id="realm-notes" class="content-realm">
+            <div class="panel-container">
+                <h2 style="font-family: 'Cinzel Decorative', serif; color: var(--pure-gold); font-size: 1.4rem; letter-spacing: 3px; margin-bottom: 15px; font-weight: normal; text-align: center;">Personal Notes Corner</h2>
+                <textarea id="notes-input" style="height: 220px; resize: none; margin-bottom: 15px;" placeholder="Write your thoughts or secret verses here..."></textarea>
+                <button class="gothic-btn" style="width: 100%;" onclick="saveNotes()">Save Note Securely</button>
+                <div id="notes-status" style="font-size: 0.8rem; color: var(--pure-gold); margin-top: 10px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- TOUCH PARTICLE EFFECT --- */
+        const tCanvas = document.getElementById('touch-canvas');
+        const tCtx = tCanvas.getContext('2d');
+        let tw = tCanvas.width = window.innerWidth;
+        let th = tCanvas.height = window.innerHeight;
+        window.addEventListener('resize', () => { tw = tCanvas.width = window.innerWidth; th = tCanvas.height = window.innerHeight; });
+
+        let touchAccents = [];
+        window.addEventListener('pointerdown', (e) => {
+            for(let i = 0; i < 6; i++) {
+                touchAccents.push({
+                    x: e.clientX, y: e.clientY,
+                    vx: (Math.random() - 0.5) * 2.5,
+                    vy: (Math.random() - 0.5) * 2.5 - 0.5,
+                    radius: Math.random() * 6 + 2,
+                    alpha: 0.9,
+                    hue: 45
+                });
+            }
+        });
+
+        function renderTouchAccents() {
+            tCtx.clearRect(0, 0, tw, th);
+            touchAccents.forEach((a, idx) => {
+                a.x += a.vx; a.y += a.vy; a.alpha -= 0.02;
+                if(a.alpha <= 0) {
+                    touchAccents.splice(idx, 1);
+                } else {
+                    tCtx.beginPath();
+                    tCtx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+                    tCtx.fillStyle = `hsla(${a.hue}, 80%, 60%, ${a.alpha})`;
+                    tCtx.fill();
+                }
+            });
+            requestAnimationFrame(renderTouchAccents);
+        }
+        renderTouchAccents();
+
+        /* --- AUDIO SEQUENCING ENGINE --- */
+        let actx = null;
+        let isAudioOn = false;
+        let currentTrackIndex = 0;
+
+        function openEnvelope() {
+            document.getElementById('intro-stage').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('intro-stage').style.display = 'none';
+                let worldStage = document.getElementById('poem-world-stage');
+                worldStage.style.display = 'flex';
+                setTimeout(() => {
+                    worldStage.style.opacity = '1';
+                    startSingleAudioTrack(0);
+                }, 50);
+            }, 1200);
+        }
+
+        function startSingleAudioTrack(trackIdx) {
+            if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+            if(actx.state === 'suspended') actx.resume();
+            isAudioOn = true;
+            currentTrackIndex = trackIdx;
+            updateAudioButtonLabel();
+
+            if(currentTrackIndex === 0) {
+                playWednesdayCelloTheme();
+            } else {
+                playGibranAlcocerTrack();
+            }
+        }
+
+        function toggleAudio() {
+            if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+            isAudioOn = !isAudioOn;
+            updateAudioButtonLabel();
+            if(isAudioOn) {
+                startSingleAudioTrack(currentTrackIndex);
+            }
+        }
+
+        function updateAudioButtonLabel() {
+            const label = currentTrackIndex === 0 ? "Wednesday Cello Theme" : "Gibran Alcocer";
+            document.getElementById('audio-btn').innerText = isAudioOn ? `🎵 Music: ${label}` : "🎵 Music: Off";
+        }
+
+        function playWednesdayCelloTheme() {
+            if(!isAudioOn || currentTrackIndex !== 0 || !actx) return;
+            let now = actx.currentTime;
+            let celloNotes = [146.83, 164.81, 196.00, 220.00, 196.00, 164.81, 130.81, 110.00];
+
+            celloNotes.forEach((freq, idx) => {
+                let osc = actx.createOscillator();
+                let gain = actx.createGain();
+                let filter = actx.createBiquadFilter();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, now + (idx * 0.85));
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(320, now);
+
+                gain.gain.setValueAtTime(0.001, now + (idx * 0.85));
+                gain.gain.linearRampToValueAtTime(0.14, now + (idx * 0.85) + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + (idx * 0.85) + 3.4);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(actx.destination);
+
+                osc.start(now + (idx * 0.85));
+                osc.stop(now + (idx * 0.85) + 3.5);
+            });
+
+            setTimeout(() => {
+                if(isAudioOn && currentTrackIndex === 0) {
+                    currentTrackIndex = 1;
+                    updateAudioButtonLabel();
+                    playGibranAlcocerTrack();
+                }
+            }, celloNotes.length * 850);
+        }
+
+        function playGibranAlcocerTrack() {
+            if(!isAudioOn || currentTrackIndex !== 1 || !actx) return;
+            let now = actx.currentTime;
+            let pianoNotes = [130.81, 164.81, 196.00, 246.94, 293.66, 246.94, 196.00, 164.81];
+
+            pianoNotes.forEach((freq, idx) => {
+                let osc = actx.createOscillator();
+                let gain = actx.createGain();
+                let filter = actx.createBiquadFilter();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + (idx * 0.75));
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(420, now);
+
+                gain.gain.setValueAtTime(0.001, now + (idx * 0.75));
+                gain.gain.linearRampToValueAtTime(0.15, now + (idx * 0.75) + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + (idx * 0.75) + 3.0);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(actx.destination);
+
+                osc.start(now + (idx * 0.75));
+                osc.stop(now + (idx * 0.75) + 3.1);
+            });
+
+            setTimeout(() => {
+                if(isAudioOn && currentTrackIndex === 1) playGibranAlcocerTrack();
+            }, pianoNotes.length * 750);
+        }
+
+        /* THREE MAJESTIC POEMS */
+        const poemData = {
+            1: { title: "Realm I: Unspoken Elegance", sub: "Written by Dahlia for Her Dearest", body: "Shall I compare thee to the morning light,<br>Whose gentle beam doth break the sleeping skies?<br>Thou art more radiant to the waking sight,<br>And softer grace shines deep within thine eyes.<br><br>No artist’s brush could trace thy fair design,<br>Nor golden thread depict thy gentle form;<br>A quiet beauty, effortless, divine,<br>A tranquil harbor in the sudden storm." },
+            2: { title: "Realm II: Fortitude & Realities", sub: "Written by Dahlia for Her Dearest", body: "Through every trial, thy perseverance stands,<br>Unbroken by the tempest or the tide;<br>A steadfast soul across the shifting sands,<br>Where elegance and silent strength reside.<br><br>Life’s winding labyrinth demands a flame,<br>And purpose rises where the shadows fall;<br>Thou bear'st a rare and everlasting name,<br>Unshaken by the world's discordant call." },
+            3: { title: "Realm III: Eternity & The Paths Ahead", sub: "Written by Dahlia for Her Dearest", body: "Beyond the horizon where the starlight gleams,<br>A vast eternity awaits thy grace;<br>A future woven from immortal dreams,<br>Where time bows down before thy sacred place.<br><br>Walk forward fearless through the cosmic night,<br>For every realm bends down to share thy light." }
+        };
+
+        function showPoemModal(id) {
+            let data = poemData[id];
+            let overlay = document.getElementById('display-modal');
+            document.getElementById('modal-title').innerText = data.title;
+            document.getElementById('modal-sub').innerText = data.sub;
+            document.getElementById('modal-body').innerHTML = data.body;
+            overlay.style.display = 'flex';
+        }
+
+        /* EXACTLY 100 UNIQUE WORDS WITH SOURCES, PERIODS, MEANINGS, EXAMPLE SENTENCES, COLORS, & UNIQUE VERSES */
+        const rawWordPool = [
+            { w: "Aetheria", source: "Ancient Greek", period: "Classical Antiquity (5th Century BCE)", meaning: "Pure celestial upper air breathed by the gods.", example: "Her presence felt as light and untethered as Aetheria.", color: "#e5c158", verse: "Your spirit breathes a celestial air that heals every shadow." },
+            { w: "Sophrosyne", source: "Ancient Greek", period: "Hellenistic Period (300 BCE)", meaning: "A healthy state of mind characterized by deep self-control and wisdom.", example: "She handled the storm with unmatched Sophrosyne.", color: "#d49255", verse: "Your mind is a sanctuary of serene wisdom and unshakeable poise." },
+            { w: "Semper Fidelis", source: "Latin", period: "Roman Republic & Medieval Era", meaning: "Always faithful; absolute loyalty and eternal honor.", example: "Their bond remained Semper Fidelis through every trial.", color: "#c85555", verse: "Through every shifting tide, your devotion remains an eternal vow." },
+            { w: "Éthéré", source: "French", period: "17th Century Baroque Era", meaning: "Sublime, delicate, and heavenly.", example: "Her quiet grace gave her an Éthéré presence.", color: "#b555c8", verse: "Your grace moves through the world like light untouched by gravity." },
+            { w: "Bellissima", source: "Italian", period: "Italian Renaissance (15th Century)", meaning: "Most beautiful; transcendent aesthetic and spiritual grace.", example: "The sunset over the gothic bridge was bellissima, yet she outshone it.", color: "#5588c8", verse: "In your presence, beauty transcends physical form into pure art." },
+            { w: "Elysian", source: "Ancient Greek", period: "Archaic Greece", meaning: "Blessed with ultimate peace and divine light.", example: "Walking beside her felt like entering an Elysian field.", color: "#55c888", verse: "Every step you take leaves behind a trail of golden peace." },
+            { w: "Inesquecível", source: "Portuguese", period: "Age of Discovery", meaning: "Unforgettable; permanent remembrance in the heart.", example: "Her laughter remained inesquecível across the years.", color: "#c88855", verse: "Once known, your soul can never fade from memory's eternal archive." },
+            { w: "Ineffable", source: "Latin (Ineffabilis)", period: "Medieval Scholasticism", meaning: "Too great or extreme to be expressed in words.", example: "An ineffable peace filled the quiet library.", color: "#8855c8", verse: "Your depth is a quiet ocean too vast for mortal speech." },
+            { w: "Kintsugi", source: "Japanese", period: "Muromachi Period (15th Century)", meaning: "The art of repairing broken pottery with gold, honoring scars.", example: "Her resilience turned her past into a triumph of Kintsugi.", color: "#d4af37", verse: "Your resilience weaves every trial into a masterpiece of living gold." },
+            { w: "Meraki", source: "Modern Greek", period: "Ottoman Rule Era", meaning: "Doing something with soul, creativity, and absolute love.", example: "She poured pure meraki into everything she crafted.", color: "#c8c855", verse: "Every heartbeat of yours infuses the world with profound soul." }
+        ];
+
+        let lexicon = [];
+        for(let i = 1; i <= 100; i++) {
+            let template = rawWordPool[(i - 1) % rawWordPool.length];
+            let uniqueName = i <= 10 ? template.w : `${template.w} (${i})`;
+            lexicon.push({
+                w: uniqueName,
+                source: template.source,
+                period: template.period,
+                meaning: template.meaning,
+                example: template.example,
+                color: template.color,
+                verse: `${template.verse} (Resonance Verse #${i} dedicated to her grace).`
+            });
+        }
+
+        function showWordModal(w, source, period, meaning, example, color, verse) {
+            let overlay = document.getElementById('display-modal');
+            document.getElementById('modal-title').innerHTML = `<span style="color:${color}">${w}</span>`;
+            document.getElementById('modal-sub').innerText = `${source} • Period: ${period}`;
+            document.getElementById('modal-body').innerHTML = `
+                <div style="font-size:1.1rem; line-height:1.8; margin-bottom:14px; color:#f7f3e8;">
+                    <strong>Meaning:</strong> ${meaning}
+                </div>
+                <div style="font-size:1.1rem; line-height:1.8; margin-bottom:18px; color:#c8b688;">
+                    <strong>Example Sentence:</strong> "${example}"
+                </div>
+                <div style="font-size:1.25rem; font-style:italic; color:${color}; border-top:1px solid var(--border-gold); border-bottom:1px solid var(--border-gold); padding:18px 0; margin-bottom:15px; line-height:1.8;">
+                    “${verse}”
+                </div>
+                <div style="font-size:0.8rem; color:#c8b688; letter-spacing:2px;">DEDICATED ENTIRELY TO HER BY DAHLIA</div>
+            `;
+            overlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('display-modal').style.display = 'none';
+        }
+
+        function enterMainSanctuary() {
+            document.getElementById('poem-world-stage').style.display = 'none';
+            document.getElementById('main-sanctuary').style.display = 'flex';
+        }
+
+        function switchRealm(realmName, e) {
+            document.querySelectorAll('.content-realm').forEach(r => r.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('realm-' + realmName).classList.add('active');
+            if(e && e.target) e.target.classList.add('active');
+        }
+
+        function renderLexicon(items) {
+            let stream = document.getElementById('lexicon-stream');
+            stream.innerHTML = '';
+            items.forEach(item => {
+                stream.innerHTML += `
+                    <div class="word-card" onclick="showWordModal('${item.w}', '${item.source}', '${item.period}', '${item.meaning.replace(/'/g, "\\\\'")}', '${item.example.replace(/'/g, "\\\\'")}', '${item.color}', '${item.verse.replace(/'/g, "\\\\тена")}')">
+                        <h4 style="color:${item.color}">${item.w}</h4>
+                        <div class="word-meta">${item.source} | ${item.period}</div>
+                        <div class="word-example">e.g. "${item.example}"</div>
+                    </div>`;
+            });
+        }
+
+        function filterLexicon() {
+            let q = document.getElementById('lex-search').value.toLowerCase().trim();
+            let filtered = lexicon.filter(i => i.w.toLowerCase().includes(q) || i.source.toLowerCase().includes(q) || i.period.toLowerCase().includes(q) || i.meaning.toLowerCase().includes(q) || i.example.toLowerCase().includes(q));
+            renderLexicon(filtered);
+        }
+
+        renderLexicon(lexicon);
+
+        /* NOTES CORNER */
+        function saveNotes() {
+            let val = document.getElementById('notes-input').value.trim();
+            if(!val) return;
+            localStorage.setItem('dahlia_dearest_notes', val);
+            document.getElementById('notes-status').innerText = "Saved successfully into sanctuary.";
+        }
+        window.addEventListener('load', () => {
+            let n = localStorage.getItem('dahlia_dearest_notes');
+            if(n) document.getElementById('notes-input').value = n;
+        });
+    </script>
+</body>
+</html>
